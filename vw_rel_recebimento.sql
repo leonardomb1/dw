@@ -10,6 +10,7 @@ AS
 (
 SELECT
 	ZNH_FILIAL AS [Filial],
+	ZNH_LOCDES AS [Armazem],
 	SUBSTRING(ZNH_CHVNFE, 26, 9) AS [Num NF],
 	ZNF_NOME AS [Fornecedor],
 	CASE ZNG_STATUS 
@@ -55,7 +56,7 @@ SELECT
 		WHEN ZE1_QDTZE2 > 0 AND ZE1_QDTSC1 > 0 AND ZE1_STATUS NOT IN ('O', 'P') THEN 'Em Atendimento Estoque/Compras'
 		WHEN ZE1_STATUS = 'O' THEN 'Encerrada'
 		WHEN ZE1_STATUS = 'P' THEN 'Eliminado Resíduo'
-		ELSE NULL END AS [Status RM],
+		ELSE NULL END AS [Sts RM],
 	CASE
 		WHEN ZE1_QDTSC1 = 0 AND ZE1_SC7QTD = 0 AND ZE1_SD1QCO = 0 THEN ''
 		WHEN ZE1_QDTSC1 > 0 AND ZE1_SC7QTD = 0 AND ZE1_SD1QCO = 0 AND (ZE1_QDTSC1 < ZE1_QUANT) THEN 'Solicitado p/ Compra Parcial'
@@ -64,7 +65,7 @@ SELECT
 		WHEN ZE1_QDTSC1 > 0 AND ZE1_SC7QTD > 0 AND ZE1_SD1QCO = 0 AND (ZE1_SC7QTD >= ZE1_QUANT) THEN 'Ped Compra Emitido Total'
 		WHEN ZE1_QDTSC1 > 0 AND ZE1_SC7QTD > 0 AND ZE1_SD1QCO > 0 AND (ZE1_SD1QCO < ZE1_QUANT) THEN 'Nota Fiscal Recebida Parcial'
 		WHEN ZE1_QDTSC1 > 0 AND ZE1_SC7QTD > 0 AND ZE1_SD1QCO > 0 AND (ZE1_SD1QCO >= ZE1_QUANT) THEN 'Nota Fiscal Recebida Total'
-		ELSE NULL END AS [Status Receb],
+		ELSE NULL END AS [Sts Entrada],
 	CASE
 		WHEN LEFT(ZE1_CC,3) = '999' AND ZE3_STATUS <> 'SA' AND (ZE1_QDTZE2 < ZE1_QUANT) AND ZE1_STATUS <> 'O' THEN 'Pendente Baixa SA - Sep Parcial'
 		WHEN LEFT(ZE1_CC,3) = '999' AND ZE3_STATUS <> 'SA' AND (ZE1_QDTZE2 >= ZE1_QUANT) AND ZE1_STATUS <> 'O' THEN 'Pendente Baixa SA - Sep Total'
@@ -75,7 +76,7 @@ SELECT
 		WHEN LEFT(ZE1_CC,3) <> '999' AND ZE1_NNTQTD > 0 AND ZE1_SD2QTD = 0 AND (ZE1_QUANT <= ZE1_NNTQTD) THEN 'Em Solic Transf - Sep. Total'
 		WHEN LEFT(ZE1_CC,3) <> '999' AND ZE1_NNTQTD > 0 AND ZE1_SD2QTD > 0 AND (ZE1_QUANT > ZE1_SD2QTD) THEN 'Em Nota Transf - Sep. Parcial'
 		WHEN LEFT(ZE1_CC,3) <> '999' AND ZE1_NNTQTD > 0 AND ZE1_SD2QTD > 0 AND (ZE1_QUANT <= ZE1_SD2QTD) THEN 'Em Nota Transf - Sep. Total'
-		ELSE NULL	END AS [Status Envio],
+		ELSE NULL	END AS [Sts Envio],
 	ZE1_CC AS [Centro Custo],
 	CTT_DESC01 AS [Desc CR],
 	C1_LOJA AS [Loja],
@@ -129,19 +130,20 @@ FROM [142.0.65.89,37000].[CF9JAO_148172_PR_PD].dbo.ZNH010 ZH WITH(NOLOCK)
 	LEFT OUTER JOIN [142.0.65.89,37000].[CF9JAO_148172_PR_PD].dbo.SF4010 F4 WITH(NOLOCK)
 	ON ZNH_TES = F4_CODIGO AND F4.D_E_L_E_T_ = ''
 	LEFT OUTER JOIN [142.0.65.89,37000].[CF9JAO_148172_PR_PD].dbo.SB2010 B2 WITH(NOLOCK)
-	ON B2_COD = B1_COD AND B2.D_E_L_E_T_ = '' AND B2_LOCAL = '01' AND B2_FILIAL = '10'
+	ON (ZNH_COD + ZNH_FILIAL + ZNH_LOCDES) = (B2_COD + B2_FILIAL + B2_LOCAL) AND B2.D_E_L_E_T_ = ''
 	LEFT OUTER JOIN [142.0.65.89,37000].[CF9JAO_148172_PR_PD].dbo.ZNQ010 ZN WITH(NOLOCK)
 	ON (ZE1_CODIGO + ZE1_ITEM + ZE1_FILORI) = (ZNQ_REQSEP + ZNQ_ITREQ + ZNQ_FILIAL) AND ZN.D_E_L_E_T_ = ''
 	LEFT OUTER JOIN [142.0.65.89,37000].[CF9JAO_148172_PR_PD].dbo.ZE3010 ZE3 WITH(NOLOCK)
 	ON (ZE3_CODRQ + ZE3_ITEMRQ + ZE3_FILIAL) = (ZE1_CODIGO + ZE1_ITEM + ZE1_FILORI) AND ZE3.D_E_L_E_T_ = ''
 --CONDIÇÕES
-WHERE ZH.D_E_L_E_T_ = '' AND ZNH_PEDIDO <> '' AND ZNH_ITEMPC <> '' AND CONVERT(DATE, ZNF_DTEMIS, 103) > GETDATE() - 180 AND ZNH_FILIAL = '10' 
+WHERE ZH.D_E_L_E_T_ = '' AND ZNH_PEDIDO <> '' AND ZNH_ITEMPC <> '' AND CONVERT(DATE, ZNF_DTEMIS, 103) > GETDATE() - 180
 ),
 
 AGGR AS
 (
 SELECT
 	[Filial]
+	,[Armazem]
 	,[Num NF]
 	,[Fornecedor]
 	,[Sts Receb]
@@ -157,9 +159,9 @@ SELECT
 	,[Item RM]
 	,[Fluig]
 	,[Tipo Emergência]
-	,[Status RM]
-	,[Status Receb]
-	,[Status Envio]
+	,[Sts RM]
+	,[Sts Entrada]
+	,[Sts Envio]
 	,[Centro Custo]
 	,[Desc CR]
 	,[Loja]
@@ -191,6 +193,7 @@ FROM CONS
 --GRUPAMENTO
 GROUP BY
 	[Filial]
+	,[Armazem]
 	,[Num NF]
 	,[Fornecedor]
 	,[Sts Receb]
@@ -206,9 +209,9 @@ GROUP BY
 	,[Item RM]
 	,[Fluig]
 	,[Tipo Emergência]
-	,[Status RM]
-	,[Status Receb]
-	,[Status Envio]
+	,[Sts RM]
+	,[Sts Entrada]
+	,[Sts Envio]
 	,[Centro Custo]
 	,[Desc CR]
 	,[Loja]
@@ -244,4 +247,3 @@ SELECT
 FROM AGGR
 
 GO
-
