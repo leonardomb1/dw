@@ -89,7 +89,8 @@ SELECT
 	ZE1_QDTZE2 AS [Qtd Separado],
 	ZNQ_QTSEPA AS [Qtd Separado WMS],
 	ZE1_NNTQTD AS [Qtd Sol Transf],
-	ZE1_SD2QTD AS [Qtd Nota Transf]
+	ZE1_SD2QTD AS [Qtd Nota Transf],
+	RIGHT(ZE1_CODIGO, 6) AS [Cod RM]
 -- TABELAS
 FROM [142.0.65.89,37000].[CF9JAO_148172_PR_PD].dbo.ZE1010 Z WITH(NOLOCK)
 LEFT OUTER JOIN [142.0.65.89,37000].[CF9JAO_148172_PR_PD].dbo.ZE3010 ZE3 WITH(NOLOCK)
@@ -168,7 +169,8 @@ SELECT
 	SUM([Qtd Nota]) AS [Qtd em NF Entrada],
 	SUM([Qtd Separado WMS]) AS [Qtd Separado WMS],
 	[Qtd Sol Transf],
-	[Qtd Nota Transf]
+	[Qtd Nota Transf],
+	[Cod RM]
 FROM CONSTRUCAO
 GROUP BY 
 	[Chave RM],
@@ -212,7 +214,8 @@ GROUP BY
 	[Qtd Sol Compra],
 	[Qtd Ped Compra],
 	[Qtd Sol Transf],
-	[Qtd Nota Transf]
+	[Qtd Nota Transf],
+	[Cod RM]
 )
 
 SELECT
