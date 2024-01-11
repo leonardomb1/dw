@@ -85,6 +85,7 @@ SELECT
 	CASE ZNF_DTDIG  WHEN '' THEN NULL ELSE CONVERT(DATE,ZNF_DTDIG, 103)  END AS [Dt Digit],
 	CASE ZE1_EMISSA WHEN '' THEN NULL ELSE CONVERT(DATE,ZE1_EMISSA, 103) END AS [Dt Emi Fluig],
 	CASE ZE1_DTINT  WHEN '' THEN NULL ELSE CONVERT(DATE,ZE1_DTINT, 103)  END AS [Dt Int Fluig],
+	CASE ZNG_DTEWMS WHEN '' THEN NULL ELSE CONVERT(DATE, ZNG_DTEWMS, 103) END AS [Dt Envio WMS],
 	C1_CC AS [CR SC],
 	CASE ZNF_SITNFE 
 		WHEN '3' THEN 'NF Cancelada' 
@@ -92,6 +93,9 @@ SELECT
 		WHEN '1' THEN 'Uso Autorizado' 
 		ELSE 'Uso Denegado' END AS [Sit NF],
 	CASE C1_OBS WHEN '' THEN NULL ELSE C1_OBS END AS [Obs SC],
+	CASE ZNG_ZZUSER WHEN '' THEN NULL ELSE ZNG_ZZUSER END AS [Usr Conferencia],
+	CASE ZNG_IDTKF WHEN '' THEN NULL ELSE ZNG_IDTKF END AS [Tkt Fiscal],
+	CASE ZNG_MSGFIS WHEN '' THEN NULL ELSE ZNG_MSGFIS END AS [Msg Tkt],
 	CASE ZNF_ZZPRO WHEN '' THEN NULL ELSE ZNF_ZZPRO END AS [Bipe NF],
 	CASE ZNF_USR WHEN '' THEN NULL ELSE ZNF_USR END AS [Bipe Usr],
 	CASE ZNF_OBS WHEN '' THEN NULL ELSE ZNF_OBS END AS [Obs Fiscal],
@@ -100,6 +104,7 @@ SELECT
 		WHEN C7_NUMSC <> '' AND C1_ZCODZE1 = '' THEN 'Inclusão SC'
 		ELSE NULL END AS [Verif SC],
 	ZNH_QUANT AS [Qtd Pre Nota],
+	ZNH_VUNIT AS [Vlr Unit Pre Nota],
 	ZE1_QUANT AS [Qtd Solic],
 	ZE1_QDTZE2 AS [Qtd Separado],
 	ZNQ_QTSEPA AS [Qtd Separ WMS],
@@ -164,14 +169,19 @@ SELECT
 	,[Dt Digit]
 	,[Dt Emi Fluig]
 	,[Dt Int Fluig]
+	,[Dt Envio WMS]
 	,[CR SC]
 	,[Sit NF]
 	,[Obs SC]
+	,[Usr Conferencia]
+	,[Tkt Fiscal]
+	,[Msg Tkt]
 	,[Bipe NF]
 	,[Bipe Usr]
 	,[Obs Fiscal]
 	,[Verif SC]
 	,SUM([Qtd Pre Nota]) AS [Qtd Pre Nota]
+	,[Vlr Unit Pre Nota]
 	,[Qtd Solic]
 	,[Qtd Separado]
 	,[Qtd Separ WMS]
@@ -208,13 +218,18 @@ GROUP BY
 	,[Dt Digit]
 	,[Dt Emi Fluig]
 	,[Dt Int Fluig]
+	,[Dt Envio WMS]
 	,[CR SC]
 	,[Sit NF]
 	,[Obs SC]
+	,[Usr Conferencia]
+	,[Tkt Fiscal]
+	,[Msg Tkt]
 	,[Bipe NF]
 	,[Bipe Usr]
 	,[Obs Fiscal]
 	,[Verif SC]
+	,[Vlr Unit Pre Nota]
 	,[Qtd Solic]
 	,[Qtd Separado]
 	,[Qtd Separ WMS]
@@ -229,3 +244,4 @@ SELECT
 FROM AGGR
 
 GO
+
